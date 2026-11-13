@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Shift Study · Changes in level</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <strong>Shift Study</strong><span>TIME SERIES / 059</span
+      ><button id="export">Export evidence ↗</button>
+    </header>
+    <main>
+      <section class="intro">
+        <p class="eyebrow">LISTEN TO THE LEVELS</p>
+        <h1>When the baseline<br />moves.</h1>
+        <p>
+          A piecewise-constant view of your series.<br />Inspect the fit.
+          Question the penalty.
+        </p>
+      </section>
+      <form id="settings">
+        <label
+          >Penalty per breakpoint<input
+            id="penalty"
+            type="number"
+            min="0"
+            max="1000000000000"
+            step="any"
+            value="30"
+            required /></label
+        ><label
+          >Minimum segment length<input
+            id="minimum"
+            type="number"
+            min="1"
+            max="50"
+            value="5"
+            required /></label
+        ><button class="primary" type="submit">Fit the series</button
+        ><button id="reset" type="button">Reset example</button>
+      </form>
+      <p id="message" role="status" aria-live="polite"></p>
+      <section class="stats">
+        <div><span>SEGMENTS</span><strong id="segments"></strong></div>
+        <div>
+          <span>RESIDUAL SUM OF SQUARES</span><strong id="sse"></strong>
+        </div>
+        <div>
+          <span>PENALIZED OBJECTIVE</span><strong id="objective"></strong>
+        </div>
+        <div>
+          <span>EXPLAINED VARIATION</span><strong id="explained"></strong>
+        </div>
+      </section>
+      <section class="chart-section">
+        <div class="section-heading">
+          <h2>The fitted series</h2>
+          <span>Click a segment to inspect its mean and residuals</span>
+        </div>
+        <svg
+          id="plot"
+          viewBox="0 0 1100 380"
+          role="group"
+          aria-label="Observed series and piecewise constant fit"
+        ></svg>
+        <p class="hint">
+          Observation indices start at zero. A boundary at 40 means the next
+          segment begins with observation 40. Equal spacing is assumed.
+        </p>
+      </section>
+      <div class="columns">
+        <section>
+          <div class="section-heading">
+            <h2>Penalty sensitivity</h2>
+            <span>Click a row to refit at that penalty</span>
+          </div>
+          <div id="sweep"></div>
+          <p class="hint">
+            This is a discrete sensitivity grid, not every possible segmentation
+            or a confidence interval.
+          </p>
+        </section>
+        <aside>
+          <p class="eyebrow">SEGMENT INSPECTOR</p>
+          <h2 id="selected-title"></h2>
+          <dl id="selected-details"></dl>
+          <p class="hint">
+            A detected boundary is an optimization result. It does not establish
+            a causal change or statistical significance.
+          </p>
+        </aside>
+      </div>
+      <details>
+        <summary>Data &amp; exports</summary>
+        <p class="hint">
+          Enter a JSON array of 2–600 numeric observations. The editor applies
+          with the current penalty and minimum length.
+        </p>
+        <textarea
+          id="values"
+          rows="10"
+          spellcheck="false"
+          aria-label="Observation array JSON"
+        ></textarea>
+        <div class="actions">
+          <button id="apply">Apply observations</button
+          ><button id="save">Save study</button
+          ><button id="open">Open study</button
+          ><button id="csv">Export fitted observations CSV</button
+          ><input id="file" type="file" accept=".json" hidden />
+        </div>
+      </details>
+      <details>
+        <summary>Segment ledger</summary>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Start inclusive</th>
+                <th>End exclusive</th>
+                <th>Count</th>
+                <th>Mean</th>
+                <th>SSE</th>
+              </tr>
+            </thead>
+            <tbody id="ledger"></tbody>
+          </table>
+        </div>
+      </details>
+      <details>
+        <summary>Method &amp; interpretation</summary>
+        <p>
+          The objective is within-segment squared error plus penalty × number of
+          breakpoints. Every segment is fitted by its mean. Dynamic programming
+          considers every feasible previous boundary and finds a global minimum
+          of the computed floating-point costs. Exact ties prefer fewer
+          segments, then the earliest final boundary encountered. No greedy
+          splitting or PELT pruning is used.
+        </p>
+        <p>
+          Segment costs use a centered online variance update. Values are
+          limited to ±1000000, length to 600, minimum segment length to 1–50,
+          and penalty to 0–10¹². The penalty has squared-data units: multiplying
+          every observation by c calls for multiplying the penalty by c² to
+          preserve the objective's relative weighting.
+        </p>
+        <p>
+          The sample is synthetic, with level changes at 40 and 90. Squared
+          error is sensitive to outliers. A trend or correlated noise can be
+          represented by artificial level changes. This tool does not choose a
+          scientifically justified penalty, handle irregular timestamps, supply
+          uncertainty intervals or predict future observations. Explained
+          variation is descriptive in-sample fit, not out-of-sample accuracy.
+        </p>
+      </details>
+      <footer>
+        SHIFT STUDY<span>Fit with care. Inspect the alternatives.</span>
+      </footer>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
