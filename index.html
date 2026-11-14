@@ -3,23 +3,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Shift Study · Changes in level</title>
+    <title>Shift Study</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <header>
-      <strong>Shift Study</strong><span>TIME SERIES / 059</span
-      ><button id="export">Export evidence ↗</button>
+      <h1>Shift Study</h1>
+      <button id="export">Export evidence ↗</button>
     </header>
     <main>
-      <section class="intro">
-        <p class="eyebrow">LISTEN TO THE LEVELS</p>
-        <h1>When the baseline<br />moves.</h1>
-        <p>
-          A piecewise-constant view of your series.<br />Inspect the fit.
-          Question the penalty.
-        </p>
-      </section>
       <form id="settings">
         <label
           >Penalty per breakpoint<input
@@ -42,22 +34,13 @@
         ><button id="reset" type="button">Reset example</button>
       </form>
       <p id="message" role="status" aria-live="polite"></p>
-      <section class="stats">
-        <div><span>SEGMENTS</span><strong id="segments"></strong></div>
-        <div>
-          <span>RESIDUAL SUM OF SQUARES</span><strong id="sse"></strong>
-        </div>
-        <div>
-          <span>PENALIZED OBJECTIVE</span><strong id="objective"></strong>
-        </div>
-        <div>
-          <span>EXPLAINED VARIATION</span><strong id="explained"></strong>
-        </div>
-      </section>
       <section class="chart-section">
         <div class="section-heading">
-          <h2>The fitted series</h2>
-          <span>Click a segment to inspect its mean and residuals</span>
+          <h2>Observed series &amp; fitted levels</h2>
+          <span
+            ><i class="legend observed"></i> Observed
+            <i class="legend fitted"></i> Fitted</span
+          >
         </div>
         <svg
           id="plot"
@@ -70,28 +53,41 @@
           segment begins with observation 40. Equal spacing is assumed.
         </p>
       </section>
-      <div class="columns">
-        <section>
-          <div class="section-heading">
-            <h2>Penalty sensitivity</h2>
-            <span>Click a row to refit at that penalty</span>
-          </div>
-          <div id="sweep"></div>
-          <p class="hint">
-            This is a discrete sensitivity grid, not every possible segmentation
-            or a confidence interval.
-          </p>
-        </section>
-        <aside>
-          <p class="eyebrow">SEGMENT INSPECTOR</p>
+      <aside class="inspector">
+        <div class="selection-label">
+          <p class="eyebrow">SELECTED INTERVAL</p>
           <h2 id="selected-title"></h2>
-          <dl id="selected-details"></dl>
-          <p class="hint">
-            A detected boundary is an optimization result. It does not establish
-            a causal change or statistical significance.
-          </p>
-        </aside>
-      </div>
+        </div>
+        <dl id="selected-details"></dl>
+        <p class="hint">
+          A detected boundary is an optimization result. It does not establish a
+          causal change or statistical significance.
+        </p>
+      </aside>
+      <section class="stats">
+        <div><span>SEGMENTS</span><strong id="segments"></strong></div>
+        <div>
+          <span>RESIDUAL SUM OF SQUARES</span><strong id="sse"></strong>
+        </div>
+        <div>
+          <span>PENALIZED OBJECTIVE</span><strong id="objective"></strong>
+        </div>
+        <div>
+          <span>EXPLAINED VARIATION</span><strong id="explained"></strong>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-heading">
+          <h2>Penalty sensitivity</h2>
+          <span>Select a penalty to refit</span>
+        </div>
+        <div id="sweep"></div>
+        <p class="hint">
+          This is a discrete sensitivity grid, not every possible segmentation
+          or a confidence interval.
+        </p>
+      </section>
       <details>
         <summary>Data &amp; exports</summary>
         <p class="hint">
@@ -155,9 +151,6 @@
           variation is descriptive in-sample fit, not out-of-sample accuracy.
         </p>
       </details>
-      <footer>
-        SHIFT STUDY<span>Fit with care. Inspect the alternatives.</span>
-      </footer>
     </main>
     <script type="module" src="app.js"></script>
   </body>

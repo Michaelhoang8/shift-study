@@ -3,7 +3,8 @@ const $ = (id) => document.getElementById(id),
   fmt = (x) => Number(x.toPrecision(7)).toString();
 let report = null,
   selected = 0,
-  worker = null;
+  worker = null,
+  plottedReport = null;
 function busy(value) {
   for (const e of document.querySelectorAll("button,input,textarea"))
     e.disabled = value;
@@ -57,33 +58,60 @@ function render() {
     span = high - low || 1,
     Y = (v) => 315 - ((v - low) / span) * 250,
     X = (i) => 60 + (i / n) * 1000;
-  let svg = `<text x="10" y="65">${fmt(high)}</text><text x="10" y="315">${fmt(low)}</text><text x="60" y="355">0</text><text x="1010" y="355">${n - 1}</text>`;
-  svg += r.segments
-    .map(
-      (seg, i) =>
-        `<rect class="region ${selected === i ? "selected" : ""}" x="${X(seg.start)}" y="40" width="${X(seg.end) - X(seg.start)}" height="290" tabindex="0" role="button" data-segment="${i}" aria-label="Segment ${i + 1}, indices ${seg.start} to ${seg.end - 1}, mean ${fmt(seg.mean)}"/>`,
-    )
-    .join("");
-  svg += `<path class="observation" d="${report.input.values.map((v, i) => `${i ? "L" : "M"}${X(i + 0.5)},${Y(v)}`).join(" ")}"/>`;
-  svg += r.segments
-    .map(
-      (seg) =>
-        `<line class="fit" x1="${X(seg.start)}" x2="${X(seg.end)}" y1="${Y(seg.mean)}" y2="${Y(seg.mean)}"/>`,
-    )
-    .join("");
-  svg += r.breakpoints
-    .map(
-      (i) =>
-        `<line class="boundary" x1="${X(i)}" x2="${X(i)}" y1="40" y2="330"/>`,
-    )
-    .join("");
-  $("plot").innerHTML = svg;
+  if (plottedReport !== report) {
+    let svg = `<defs><linearGradient id="region-wash" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7655e5" stop-opacity=".14"/><stop offset="1" stop-color="#7655e5" stop-opacity=".02"/></linearGradient></defs>`;
+    svg += Array.from({ length: 6 }, (_, i) => {
+      const y = 65 + i * 50;
+      return `<line class="grid-line" x1="60" x2="1060" y1="${y}" y2="${y}"/><text x="8" y="${y + 4}">${fmt(low + span - (span * i) / 5)}</text>`;
+    }).join("");
+    svg += `<text x="60" y="355">0</text><text x="1010" y="355">${n - 1}</text><rect id="selection-wash" x="0" y="40" width="0" height="290" fill="url(#region-wash)"/>`;
+    svg += r.segments
+      .map(
+        (seg, i) =>
+          `<rect class="region" x="${X(seg.start)}" y="40" width="${X(seg.end) - X(seg.start)}" height="290" tabindex="0" role="button" data-segment="${i}" aria-label="Segment ${i + 1}, indices ${seg.start} to ${seg.end - 1}, mean ${fmt(seg.mean)}"/>`,
+      )
+      .join("");
+    svg += `<path class="observation" d="${report.input.values.map((v, i) => `${i ? "L" : "M"}${X(i + 0.5)},${Y(v)}`).join(" ")}"/>`;
+    svg += r.segments
+      .map(
+        (seg) =>
+          `<line class="fit" pathLength="1" x1="${X(seg.start)}" x2="${X(seg.end)}" y1="${Y(seg.mean)}" y2="${Y(seg.mean)}"/><circle class="level-dot" cx="${X(seg.start)}" cy="${Y(seg.mean)}" r="4"/>`,
+      )
+      .join("");
+    svg += r.breakpoints
+      .map(
+        (i) =>
+          `<line class="boundary" x1="${X(i)}" x2="${X(i)}" y1="40" y2="330"/><text class="boundary-label" x="${X(i) + 8}" y="28">${i}</text>`,
+      )
+      .join("");
+    $("plot").innerHTML = svg;
+    plottedReport = report;
+  }
+  const wash = $("selection-wash");
+  wash.style.transform = `translateX(${X(s.start)}px)`;
+  wash.style.width = `${X(s.end) - X(s.start)}px`;
+  for (const region of $("plot").querySelectorAll("[data-segment]")) {
+    const active = Number(region.dataset.segment) === selected;
+    region.classList.toggle("selected", active);
+    region.setAttribute("aria-pressed", String(active));
+  }
   $("sweep").innerHTML = report.sweep
     .map(
       (x) =>
-        `<button class="sweep-row ${x.penalty === report.input.penalty ? "active" : ""}" data-penalty="${x.penalty}"><span>λ ${fmt(x.penalty)}</span><span>${x.segments} segments</span><span>SSE ${fmt(x.sse)}</span></button>`,
+        `<button class="sweep-row ${x.penalty === report.input.penalty ? "active" : ""}" data-penalty="${x.penalty}"><span>λ ${fmt(x.penalty)}</span><strong>${x.segments}<small> segments</small></strong><span>SSE ${fmt(x.sse)}</span></button>`,
     )
     .join("");
+  for (const [i, item] of [...$("sweep").children].entries()) {
+    const max = Math.max(...report.sweep.map((x) => x.segments));
+    item.style.setProperty(
+      "--level",
+      `${(100 * report.sweep[i].segments) / max}%`,
+    );
+    item.setAttribute(
+      "aria-pressed",
+      String(report.sweep[i].penalty === report.input.penalty),
+    );
+  }
   $("selected-title").textContent = `[${s.start}, ${s.end})`;
   $("selected-details").innerHTML =
     `<dt>Observations</dt><dd>${s.count}</dd><dt>Mean</dt><dd>${fmt(s.mean)}</dd><dt>Residual sum of squares</dt><dd>${fmt(s.sse)}</dd><dt>Root mean squared residual</dt><dd>${fmt(Math.sqrt(s.sse / s.count))}</dd>`;

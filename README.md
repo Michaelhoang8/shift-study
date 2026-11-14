@@ -20,11 +20,13 @@ python -m unittest discover -s tests -p 'test_*.py'
 
 Development checks use Node 22+. CI runs on Linux and Windows.
 
+The chart occupies the main workspace, with animated fitted-level strokes and a sliding segment highlight. The selected interval’s measurements sit immediately beneath it. Penalty cards show relative segment counts, and editing/export tools remain in disclosures. Keyboard selection retains focus; motion respects reduced-motion preferences.
+
 ## Explore the fit
 
 The reproducible synthetic example contains 120 observations with constructed level changes at indices 40 and 90. With penalty 30 and minimum length 5, the optimizer finds those boundaries, producing three segments and residual sum of squares 77.86471527198012. The objective adds two breakpoint penalties for a total near 137.86471527.
 
-Select a segment by mouse or keyboard to inspect its mean, count, SSE and root mean squared residual. Click a penalty-sensitivity row to refit. At penalty 3.75 the example uses four segments; a penalty of 10¹² selects one. Import observations as a JSON array or load a complete study. Export the last applied input, full numerical evidence, or observed/fitted/residual CSV rows.
+Select a segment by mouse or keyboard to inspect its mean, count, SSE and root mean squared residual. Select a penalty-sensitivity card to refit. At penalty 3.75 the example uses four segments; a penalty of 10¹² selects one. Import observations as a JSON array or load a complete study. Export the last applied input, full numerical evidence, or observed/fitted/residual CSV rows.
 
 Indices are zero-based; intervals are start-inclusive and end-exclusive. A boundary at 40 means observation 40 starts the next segment. Observations are equally spaced; no timestamps are interpreted.
 
